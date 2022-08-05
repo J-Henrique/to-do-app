@@ -31,34 +31,11 @@ class ListAdapter : RecyclerView.Adapter<ListAdapter.MyViewHolder>() {
 
     override fun getItemCount() = dataList.size
 
-    class MyViewHolder(private val binding: RowLayoutBinding) :
-        RecyclerView.ViewHolder(binding.root) {
+    class MyViewHolder(private val binding: RowLayoutBinding) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(toDoData: ToDoData) {
-            binding.titleTxt.text = toDoData.title
-            binding.descriptionTxt.text = toDoData.description
-            when (toDoData.priority) {
-                Priority.HIGH -> {
-                    binding.priorityIndicator.setCardBackgroundColor(
-                        ContextCompat.getColor(binding.root.context, R.color.red)
-                    )
-                }
-                Priority.MEDIUM -> {
-                    binding.priorityIndicator.setCardBackgroundColor(
-                        ContextCompat.getColor(binding.root.context, R.color.yellow)
-                    )
-                }
-                Priority.LOW -> {
-                    binding.priorityIndicator.setCardBackgroundColor(
-                        ContextCompat.getColor(binding.root.context, R.color.green)
-                    )
-                }
-            }
-            binding.rowBackground.setOnClickListener {
-                binding.root.findNavController().navigate(
-                    ListFragmentDirections.actionListFragmentToUpdateFragment(toDoData)
-                )
-            }
+            binding.toDoData = toDoData
+            binding.executePendingBindings()
         }
     }
 }

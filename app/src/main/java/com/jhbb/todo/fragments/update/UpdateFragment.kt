@@ -21,7 +21,7 @@ class UpdateFragment : Fragment() {
 
     private var _binding: FragmentUpdateBinding? = null
     private val binding get() = _binding!!
-    private val args: UpdateFragmentArgs by navArgs()
+    private val args by navArgs<UpdateFragmentArgs>()
     private val sharedViewModel: SharedViewModel by viewModels()
     private val viewModel: ToDoViewModel by viewModels()
 
@@ -30,9 +30,9 @@ class UpdateFragment : Fragment() {
         savedInstanceState: Bundle?,
     ): View {
         _binding = FragmentUpdateBinding.inflate(inflater)
-        binding.currentTitleEt.setText(args.currentItem.title)
-        binding.currentDescriptionEt.setText(args.currentItem.description)
-        binding.currentPrioritiesSpinner.setSelection(args.currentItem.priority.ordinal)
+        binding.lifecycleOwner = this
+        binding.navArgs = args
+
         binding.currentPrioritiesSpinner.onItemSelectedListener = sharedViewModel.listener
         return binding.root
     }

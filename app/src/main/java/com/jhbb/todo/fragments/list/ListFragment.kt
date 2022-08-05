@@ -30,23 +30,21 @@ class ListFragment : Fragment() {
         savedInstanceState: Bundle?,
     ): View {
         _binding = FragmentListBinding.inflate(inflater)
-        binding.floatingActionButton.setOnClickListener {
-            findNavController().navigate(R.id.action_listFragment_to_addFragment)
-        }
-        binding.recyclerView.adapter = adapter
-        binding.recyclerView.layoutManager = LinearLayoutManager(requireActivity())
+        binding.lifecycleOwner = this
+        binding.sharedViewModel = sharedViewModel
+
+        setupRecyclerView()
 
         viewModel.getAllData.observe(viewLifecycleOwner) {
             sharedViewModel.checkIfDatabaseEmpty(it)
             adapter.dataList = it
         }
-        sharedViewModel.emptyDatabase.observe(viewLifecycleOwner) {
-            with(binding) {
-                noDataImageView.isVisible = it
-                noDataTextView.isVisible = it
-            }
-        }
         return binding.root
+    }
+
+    private fun setupRecyclerView() {
+        binding.recyclerView.adapter = adapter
+        binding.recyclerView.layoutManager = LinearLayoutManager(requireActivity())
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
