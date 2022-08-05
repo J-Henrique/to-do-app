@@ -6,16 +6,19 @@ import android.view.*
 import android.widget.Toast
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
-import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
 import com.jhbb.todo.R
+import com.jhbb.todo.data.models.ToDoData
 import com.jhbb.todo.data.viewModel.ToDoViewModel
 import com.jhbb.todo.databinding.FragmentListBinding
 import com.jhbb.todo.fragments.SharedViewModel
+import com.jhbb.todo.fragments.list.adapter.ListAdapter
 
 class ListFragment : Fragment() {
 
@@ -45,6 +48,27 @@ class ListFragment : Fragment() {
     private fun setupRecyclerView() {
         binding.recyclerView.adapter = adapter
         binding.recyclerView.layoutManager = LinearLayoutManager(requireActivity())
+        val swipeToDeleteCallback = object : SwipeToDelete() {
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val item = adapter.dataList[viewHolder.adapterPosition]
+                viewModel.deleteData(item)
+                adapter.notifyItemChanged(viewHolder.adapterPosition)
+                restoreDeletedData(viewHolder.itemView, item, viewHolder.adapterPosition)
+            }
+        }
+        val itemTouchHelper = ItemTouchHelper(swipeToDeleteCallback)
+        itemTouchHelper.attachToRecyclerView(binding.recyclerView)
+    }
+
+    fun restoreDeletedData(view: View, deletedItem: ToDoData, position: Int) {
+        val snackbar = Snackbar.make(
+            view, "Deleted '${deletedItem.title}'", Snackbar.LENGTH_LONG
+        )
+        snackbar.setAction("Undo") {
+            viewModel.insertData(deletedItem)
+            adapter.notifyItemChanged(position)
+        }
+        snackbar.show()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

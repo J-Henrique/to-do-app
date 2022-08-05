@@ -1,12 +1,8 @@
-package com.jhbb.todo.fragments.list
+package com.jhbb.todo.fragments.list.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
-import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
-import com.jhbb.todo.R
-import com.jhbb.todo.data.models.Priority
 import com.jhbb.todo.data.models.ToDoData
 import com.jhbb.todo.databinding.RowLayoutBinding
 
