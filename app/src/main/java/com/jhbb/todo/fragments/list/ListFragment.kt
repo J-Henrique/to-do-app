@@ -1,19 +1,29 @@
 package com.jhbb.todo.fragments.list
 
+import android.app.AlertDialog
 import android.os.Bundle
 import android.view.*
+import android.widget.Toast
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.jhbb.todo.R
+import com.jhbb.todo.data.viewModel.ToDoViewModel
 import com.jhbb.todo.databinding.FragmentListBinding
+import com.jhbb.todo.fragments.SharedViewModel
 
 class ListFragment : Fragment() {
 
     private var _binding: FragmentListBinding? = null
     private val binding get() = _binding!!
+    private val adapter: ListAdapter by lazy { ListAdapter() }
+    private val viewModel: ToDoViewModel by viewModels()
+    private val sharedViewModel: SharedViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -23,8 +33,18 @@ class ListFragment : Fragment() {
         binding.floatingActionButton.setOnClickListener {
             findNavController().navigate(R.id.action_listFragment_to_addFragment)
         }
-        binding.listLayout.setOnClickListener {
-            findNavController().navigate(R.id.action_listFragment_to_updateFragment)
+        binding.recyclerView.adapter = adapter
+        binding.recyclerView.layoutManager = LinearLayoutManager(requireActivity())
+
+        viewModel.getAllData.observe(viewLifecycleOwner) {
+            sharedViewModel.checkIfDatabaseEmpty(it)
+            adapter.dataList = it
+        }
+        sharedViewModel.emptyDatabase.observe(viewLifecycleOwner) {
+            with(binding) {
+                noDataImageView.isVisible = it
+                noDataTextView.isVisible = it
+            }
         }
         return binding.root
     }
@@ -39,10 +59,24 @@ class ListFragment : Fragment() {
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 when (menuItem.itemId) {
                     android.R.id.home -> requireActivity().onBackPressed()
+                    R.id.menu_delete_all -> confirmDeleteAll()
                 }
                 return true
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+    }
+
+    private fun confirmDeleteAll() {
+        AlertDialog.Builder(requireContext())
+            .setPositiveButton("Yes") { _,_ ->
+                viewModel.deleteAll()
+                Toast.makeText(requireContext(), "Successfully deleted all data!", Toast.LENGTH_LONG).show()
+            }
+            .setNegativeButton("No") { _, _ -> }
+            .setMessage("Are you sure you want to remove all data?")
+            .setTitle("Delete everything")
+            .create()
+            .show()
     }
 
     override fun onDestroyView() {
