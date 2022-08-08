@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.os.Bundle
 import android.view.*
 import android.widget.Toast
+import androidx.appcompat.widget.SearchView
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
@@ -19,8 +20,9 @@ import com.jhbb.todo.data.viewModel.ToDoViewModel
 import com.jhbb.todo.databinding.FragmentListBinding
 import com.jhbb.todo.fragments.SharedViewModel
 import com.jhbb.todo.fragments.list.adapter.ListAdapter
+import jp.wasabeef.recyclerview.animators.SlideInUpAnimator
 
-class ListFragment : Fragment() {
+class ListFragment : Fragment(), SearchView.OnQueryTextListener {
 
     private var _binding: FragmentListBinding? = null
     private val binding get() = _binding!!
@@ -48,11 +50,14 @@ class ListFragment : Fragment() {
     private fun setupRecyclerView() {
         binding.recyclerView.adapter = adapter
         binding.recyclerView.layoutManager = LinearLayoutManager(requireActivity())
+        binding.recyclerView.itemAnimator = SlideInUpAnimator().apply {
+            addDuration = 300
+        }
         val swipeToDeleteCallback = object : SwipeToDelete() {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val item = adapter.dataList[viewHolder.adapterPosition]
                 viewModel.deleteData(item)
-                adapter.notifyItemChanged(viewHolder.adapterPosition)
+                adapter.notifyItemRemoved(viewHolder.adapterPosition)
                 restoreDeletedData(viewHolder.itemView, item, viewHolder.adapterPosition)
             }
         }
@@ -76,6 +81,9 @@ class ListFragment : Fragment() {
         menuHost.addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                 menuInflater.inflate(R.menu.list_fragment_menu, menu)
+                val searchView = menu.getItem(0).actionView as? SearchView
+                searchView?.isSubmitButtonEnabled = true
+                searchView?.setOnQueryTextListener(this@ListFragment)
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
@@ -99,6 +107,27 @@ class ListFragment : Fragment() {
             .setTitle("Delete everything")
             .create()
             .show()
+    }
+
+    private fun searchThroughDatabase(query: String) {
+        val searchQuery = "%$query%"
+        viewModel.searchDatabase(searchQuery).observe(viewLifecycleOwner) {
+            it?.let { adapter.dataList = it }
+        }
+    }
+
+    override fun onQueryTextSubmit(query: String?): Boolean {
+        if (query != null) {
+            searchThroughDatabase(query)
+        }
+        return true
+    }
+
+    override fun onQueryTextChange(query: String?): Boolean {
+        if (query != null) {
+            searchThroughDatabase(query)
+        }
+        return true
     }
 
     override fun onDestroyView() {
