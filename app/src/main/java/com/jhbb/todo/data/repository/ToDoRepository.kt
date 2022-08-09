@@ -8,6 +8,10 @@ class ToDoRepository(private val toDoDao: ToDoDao) {
 
     fun getAllToDoData(): LiveData<List<ToDoData>> = toDoDao.getAllData()
 
+    fun sortByHighPriority(): LiveData<List<ToDoData>> = toDoDao.sortByHighPriority()
+
+    fun sortByLowPriority(): LiveData<List<ToDoData>> = toDoDao.sortByLowPriority()
+
     suspend fun insertData(toDoData: ToDoData) {
         toDoDao.insertData(toDoData)
     }

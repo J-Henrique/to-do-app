@@ -10,9 +10,7 @@ import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
-import androidx.recyclerview.widget.ItemTouchHelper
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.*
 import com.google.android.material.snackbar.Snackbar
 import com.jhbb.todo.R
 import com.jhbb.todo.data.models.ToDoData
@@ -49,7 +47,7 @@ class ListFragment : Fragment(), SearchView.OnQueryTextListener {
 
     private fun setupRecyclerView() {
         binding.recyclerView.adapter = adapter
-        binding.recyclerView.layoutManager = LinearLayoutManager(requireActivity())
+        binding.recyclerView.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         binding.recyclerView.itemAnimator = SlideInUpAnimator().apply {
             addDuration = 300
         }
@@ -90,6 +88,12 @@ class ListFragment : Fragment(), SearchView.OnQueryTextListener {
                 when (menuItem.itemId) {
                     android.R.id.home -> requireActivity().onBackPressed()
                     R.id.menu_delete_all -> confirmDeleteAll()
+                    R.id.menu_priority_high -> viewModel.sortByHighPriority.observe(viewLifecycleOwner) {
+                        adapter.dataList = it
+                    }
+                    R.id.menu_priority_low -> viewModel.sortByLowPriority.observe(viewLifecycleOwner) {
+                        adapter.dataList = it
+                    }
                 }
                 return true
             }
