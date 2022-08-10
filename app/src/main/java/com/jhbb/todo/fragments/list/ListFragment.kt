@@ -18,6 +18,7 @@ import com.jhbb.todo.data.viewModel.ToDoViewModel
 import com.jhbb.todo.databinding.FragmentListBinding
 import com.jhbb.todo.fragments.SharedViewModel
 import com.jhbb.todo.fragments.list.adapter.ListAdapter
+import com.jhbb.todo.utils.hideKeyboard
 import jp.wasabeef.recyclerview.animators.SlideInUpAnimator
 
 class ListFragment : Fragment(), SearchView.OnQueryTextListener {
@@ -42,6 +43,7 @@ class ListFragment : Fragment(), SearchView.OnQueryTextListener {
             sharedViewModel.checkIfDatabaseEmpty(it)
             adapter.dataList = it
         }
+        requireActivity().hideKeyboard()
         return binding.root
     }
 
@@ -56,20 +58,19 @@ class ListFragment : Fragment(), SearchView.OnQueryTextListener {
                 val item = adapter.dataList[viewHolder.adapterPosition]
                 viewModel.deleteData(item)
                 adapter.notifyItemRemoved(viewHolder.adapterPosition)
-                restoreDeletedData(viewHolder.itemView, item, viewHolder.adapterPosition)
+                restoreDeletedData(viewHolder.itemView, item)
             }
         }
         val itemTouchHelper = ItemTouchHelper(swipeToDeleteCallback)
         itemTouchHelper.attachToRecyclerView(binding.recyclerView)
     }
 
-    fun restoreDeletedData(view: View, deletedItem: ToDoData, position: Int) {
+    fun restoreDeletedData(view: View, deletedItem: ToDoData) {
         val snackbar = Snackbar.make(
             view, "Deleted '${deletedItem.title}'", Snackbar.LENGTH_LONG
         )
         snackbar.setAction("Undo") {
             viewModel.insertData(deletedItem)
-            adapter.notifyItemChanged(position)
         }
         snackbar.show()
     }
