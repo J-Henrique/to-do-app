@@ -19,7 +19,7 @@ import com.jhbb.todo.databinding.FragmentListBinding
 import com.jhbb.todo.fragments.SharedViewModel
 import com.jhbb.todo.fragments.list.adapter.ListAdapter
 import com.jhbb.todo.utils.hideKeyboard
-import jp.wasabeef.recyclerview.animators.SlideInUpAnimator
+import com.jhbb.todo.utils.observeOnce
 
 class ListFragment : Fragment(), SearchView.OnQueryTextListener {
 
@@ -42,6 +42,7 @@ class ListFragment : Fragment(), SearchView.OnQueryTextListener {
         viewModel.getAllData.observe(viewLifecycleOwner) {
             sharedViewModel.checkIfDatabaseEmpty(it)
             adapter.dataList = it
+            binding.recyclerView.scheduleLayoutAnimation()
         }
         requireActivity().hideKeyboard()
         return binding.root
@@ -50,9 +51,6 @@ class ListFragment : Fragment(), SearchView.OnQueryTextListener {
     private fun setupRecyclerView() {
         binding.recyclerView.adapter = adapter
         binding.recyclerView.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
-        binding.recyclerView.itemAnimator = SlideInUpAnimator().apply {
-            addDuration = 300
-        }
         val swipeToDeleteCallback = object : SwipeToDelete() {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val item = adapter.dataList[viewHolder.adapterPosition]
@@ -116,7 +114,7 @@ class ListFragment : Fragment(), SearchView.OnQueryTextListener {
 
     private fun searchThroughDatabase(query: String) {
         val searchQuery = "%$query%"
-        viewModel.searchDatabase(searchQuery).observe(viewLifecycleOwner) {
+        viewModel.searchDatabase(searchQuery).observeOnce(viewLifecycleOwner) {
             it?.let { adapter.dataList = it }
         }
     }
